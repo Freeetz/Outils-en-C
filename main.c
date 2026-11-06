@@ -3,6 +3,7 @@
 #include <stdbool.h> // Pour false & true
 #include <string.h> // Pour comparer deux chaîne de caractère
 #include <termios.h> // Gérer le comportement du terminal
+#include <time.h> 
 #include <unistd.h>
 #include "config.h"
 
@@ -126,6 +127,41 @@ void compte_a_rebours(int *chiffre) {
     }
 }
 
+void jeu() {
+    bool hasNumber = false;
+    int nombre = rand() % (100 + 1);
+    nombre += 1;
+
+    // printf("💡 - \033[33mTips\033[0m: Si vous avez besoin d'un indice, écrivez simplement '\033[33mindice\033[0m' dans le terminal.\n"); // TODO: Système d'indice
+
+    while (!hasNumber) {
+        int prediction;
+
+        printf("Choisissez un nombre entre \033[36m1\033[0m et \033[36m100\033[0m : ");
+
+        if (scanf("%d", &prediction) != 1) {
+            printf("\033[31mUtilisez des caractères est strictement interdit.\033[0m\n"); 
+            getchar();
+        }
+
+        if (prediction < 0 || prediction > 100) { 
+            printf("\033[31mVous ne pouvez pas donner un nombre inférieur à 0 ou supérieur à 100.\033[0m\n");
+        }
+
+        if (prediction < nombre) { 
+            printf("C'est plus !\n");
+        } else if (prediction > nombre) {
+            printf("C'est moins !\n");
+        }
+
+        if (prediction == nombre) {
+            printf("\033[32mFélicitation ! Vous avez trouver le nombre.\033[0m\n");
+            hasNumber = true;
+        }
+        
+    }
+}
+
 int cinematic() {
     printf("⏳ - \033[33mInitialisation du programme\033[0m\n");
     sleep(3);
@@ -142,6 +178,9 @@ int cinematic() {
 
 int main(void)
 {
+
+    srand(time(NULL));
+
     while (!accessAuthorized && !hasMdp) {
         accessAuthorized = connect();
         hasMdp = connectMDP();
@@ -151,7 +190,7 @@ int main(void)
         
         if (cine) {
             char action[50];
-            printf("💡 Tips: utilisez \033[31mexit\033[0m pour quitter.\n");
+            printf("💡 \033[33mTips\033[0m: utilisez \033[31mexit\033[0m pour quitter.\n");
             printf("Quel action voulez-vous éxécuter : ");
             scanf("%49s", action);
 
@@ -175,7 +214,10 @@ int main(void)
                 } else {
                     printf("\033[31mVous ne pouvez pas indiquer une valeur inférieur à 0.\033[0m\n");
                 }
-            } else if (strmcp(action, "clear")) {
+            } else if (strcmp(action, "jeu") == 0) {
+                system("clear");
+                jeu();
+            } else if (strcmp(action, "clear") == 0) {
                 system("clear");
             } else {
                 printf("\033[31mCommande inexistante\033[0m\n");
