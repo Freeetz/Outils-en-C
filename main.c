@@ -109,6 +109,23 @@ void calcul(char choix[]) {
     }
 }
 
+void compte_a_rebours(int *chiffre) {
+    //int value = chiffre;
+    while (*chiffre != 0) {
+        if (*chiffre < 6) {
+            printf("\033[31m%d\033[0m\n", *chiffre); // A partir de 5 proche de la fin, donc les nombres sont affiché en rouge.
+        } else {
+            printf("%d\n", *chiffre);
+        }
+
+        *chiffre = *chiffre - 1;
+        if (*chiffre == 1) {
+            printf("\033[32mFIN DU COMPTE À REBOURS !!\033[0m");
+        };
+        sleep(1);
+    }
+}
+
 int cinematic() {
     printf("⏳ - \033[33mInitialisation du programme\033[0m\n");
     sleep(3);
@@ -147,6 +164,19 @@ int main(void)
                 printf("Indiquez un type de calcule (division, multiplication, addition, soustraction, reste) : ");
                 scanf("%49s", choix);
                 calcul(choix);
+            } else if (strcmp(action,"compte-a-rebours") == 0) { 
+                system("clear");
+
+                int chiffre;
+                printf("Indiquez un chiffre de départ : ");
+                scanf("%d", &chiffre);
+                if (chiffre > 0) {
+                    compte_a_rebours(&chiffre);
+                } else {
+                    printf("\033[31mVous ne pouvez pas indiquer une valeur inférieur à 0.\033[0m\n");
+                }
+            } else if (strmcp(action, "clear")) {
+                system("clear");
             } else {
                 printf("\033[31mCommande inexistante\033[0m\n");
             }
