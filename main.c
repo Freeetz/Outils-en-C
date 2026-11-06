@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h> // Pour false & true
 #include <string.h> // Pour comparer deux chaîne de caractère
-#include <termios.h>
+#include <termios.h> // Gérer le comportement du terminal
 #include <unistd.h>
 #include "config.h"
 
@@ -37,18 +37,18 @@ int connect(void) {
 int connectMDP(void) {
     char mdp[50];
     bool validMdp = false;
-    struct termios old, new;
+    struct termios old, new; // termios -> permet de controler le comportement du terminal | struct -> déclare une structure
 
     printf("Veuillez insérez votre \033[36mMot de Passe :\033[0m ");
-    fflush(stdout);
+    fflush(stdout); // stdout -> Sortie standard : ce qui s'affiche dans le terminal | fflush -> force l'affichage du printf
 
-    tcgetattr(STDIN_FILENO, &old);
+    tcgetattr(STDIN_FILENO, &old); // tcgetattr -> récupère les attributs du terminal | STDIN_FILENO -> entrée standard (le clavier)
     new = old;
-    new.c_lflag &= ~ECHO;
+    new.c_lflag &= ~ECHO; // c_lflag -> paramètre locaux du terminal // ~ECHO faire en sorte que ce que tu tape ne s'affiche pas / Cet ligne conserve tout les paramètre et désactive simplement le ECHO.
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &new);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new); // TCSANOW -> appliquer les modif immédiatement 
     scanf("%49s", mdp);
-    tcsetattr(STDIN_FILENO, TCSANOW, &old);
+    tcsetattr(STDIN_FILENO, TCSANOW, &old); // Retour à la config initial
 
     if (strcmp(mdp, PASSWORD) == 0) {
         printf("\n\033[32mMot de passe valide, connexion autorisé !\033[0m \n");
@@ -63,38 +63,50 @@ int connectMDP(void) {
     }
 }
 
-int calcul(void) {
-    char choix[50];
-    int number1;
-    int number2;
-    double resultat;
-    printf("Indiquez un type de calcule (\033[32mdivision\033[0m, \033[32mmultiplication\033[0m, \033[32maddition\033[0m, \033[32msoustraction\033[0m, \033[32mreste\033[0m) : ");
-    scanf("%s", choix);
+void calcul(char choix[]) { 
 
-    printf("\033[33mPremier nombre\033[0m : ");
-    scanf("%d", &number1);
-    printf("\033[33mSecond nombre\033[0m : ");
-    scanf("%d", &number2);
+    if (strcmp(choix, "addition") == 0 || strcmp(choix, "soustraction") == 0 || strcmp(choix, "multiplication") == 0) {
+        int number1;
+        int number2;
+        int resultat;
 
-    if (strcmp(choix, "division") == 0) {
-        resultat = number1 / number2;
-        printf("Résultat de %d / %d es \033[36m%.2f\033[0m\n", number1, number2, resultat);
-    } else if (strcmp(choix, "multiplication") == 0) {
-        resultat = number1 * number2;
-        printf("Résultat de %d * %d es \033[36m%.2f\033[0m\n", number1, number2, resultat);
-    } else if (strcmp(choix, "addition") == 0) {
-        resultat = number1 + number2;
-        printf("Résultat de %d + %d es \033[36m%.2f\033[0m\n", number1, number2, resultat);
-    } else if (strcmp(choix, "soustraction") == 0) {
-        resultat = number1 - number2;
-        printf("Résultat de %d / %d es \033[36m%.2f\033[0m\n", number1, number2, resultat);
-    } else if (strcmp(choix, "reste") == 0) {
-        resultat = number1 % number2;
-        printf("Résultat de %d modulo %d es \033[36m%.2f\033[0m\n", number1, number2, resultat);
+        printf("\033[33mPremier nombre : \033[0m");
+        scanf("%d", &number1);
+        printf("\033[33mSecond nombre : \033[0m");
+        scanf("%d", &number2);
+
+        if (strcmp(choix, "multiplication") == 0) {
+            resultat = number1 * number2;
+            printf("Résultat de %d * %d es %d", number1, number2, resultat);
+        } else if (strcmp(choix, "addition") == 0) {
+            resultat = number1 + number2;
+            printf("Résultat de %d + %d es %d", number1, number2, resultat);
+        } else if (strcmp(choix, "soustraction") == 0) {
+            resultat = number1 - number2;
+            printf("Résultat de %d / %d es %d", number1, number2, resultat);
+        } else if (strcmp(choix, "reste") == 0) {
+            resultat = number1 % number2;
+            printf("Résultat de %d modulo %d es %d", number1, number2, resultat);
+        }
+    } else if (strcmp(choix, "division") == 0) {
+        double number1;
+        double number2;
+        double resultat;
+
+        printf("\033[33mPremier nombre : \033[0m"); 
+        scanf("%lf", &number1);
+        printf("\033[33mSecond nombre : \033[0m");
+        scanf("%lf", &number2);
+
+        if (number2 != 0) {
+            resultat = number1 / number2;
+            printf("Résultat de %.2f / %.2f = %.2f\n", number1, number2, resultat);
+        } else {
+            printf("Division par zéro pas possible.");
+        }
     } else {
-        printf("Commande inconnu.");
+        printf("Commande inconnu");
     }
-    return 0;
 }
 
 int cinematic() {
@@ -130,7 +142,11 @@ int main(void)
                 exit(0);
             } else if (strcmp(action, "calculatrice") == 0) {
                 system("clear");
-                calcul();
+                
+                char choix[50];
+                printf("Indiquez un type de calcule (division, multiplication, addition, soustraction, reste) : ");
+                scanf("%49s", choix);
+                calcul(choix);
             } else {
                 printf("\033[31mCommande inexistante\033[0m\n");
             }
