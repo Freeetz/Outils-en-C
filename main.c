@@ -6,6 +6,7 @@
 #include <time.h> 
 #include <unistd.h>
 #include "config.h"
+#include "features/function.h"
 
 bool accessAuthorized = false;
 bool hasMdp = false;
@@ -378,6 +379,8 @@ int main(void)
                 system("clear");
             } else if (strcmp(action, "mdp") == 0) {
                 modifMdp();
+            } else if (strcmp(action, "table") == 0) {
+                tableMultiplication();
             } else {
                 printf("\033[31mCommande inexistante\033[0m\n");
             }
