@@ -14,6 +14,35 @@ bool cine = false;
 char username[50];
 bool Timeout = true;
 
+    char *init(void) {
+        time_t now = time(NULL);
+        struct tm *date = localtime(&now);
+        int jour, mois, annee, heure, minute;
+        static char lastConnect[100];
+
+        strcpy(lastConnect, "firstConnexion");
+
+        // Lire quand était la dernière connexion
+        FILE *fichierRead = fopen(".infos", "r"); 
+
+        if (fichierRead != NULL) {
+            if (fscanf(fichierRead, "Dernière connexion : %d/%d/%d à %d:%d", &jour, &mois, &annee, &heure, &minute) == 5) { // Vérifie que ce n'est pas la première connexion
+                snprintf(lastConnect, sizeof(lastConnect), "%02d/%02d/%02d à %02d:%02d", jour, mois, annee, heure, minute);
+            }
+            fclose(fichierRead);
+        }
+
+        // Ecrire la dernière connexion actuel
+        FILE *fichier = fopen(".infos", "w"); 
+
+        if (fichier != NULL) {
+            fprintf(fichier, "Dernière connexion : %02d/%02d/%02d à %02d:%02d", date->tm_mday, date->tm_mon+1, date->tm_year+1900, date->tm_hour, date->tm_min);
+            fclose(fichier);
+        }
+
+        return lastConnect;
+    }
+
 int checkTimeout() {
     time_t now = time(NULL);
     struct tm *date = localtime(&now);
@@ -51,7 +80,7 @@ int timeout() {
     time_t now = time(NULL);
     struct tm *date = localtime(&now);
     FILE *fichier = fopen(".timeout", "w");
-    fprintf(fichier, "%02d/%02d/%02d | %02d:%02d", date->tm_mday, date->tm_mon, date->tm_year, date->tm_hour, date->tm_min);
+    fprintf(fichier, "%02d/%02d/%02d | %02d:%02d", date->tm_mday, date->tm_mon+1, date->tm_year+1900, date->tm_hour, date->tm_min);
     fclose(fichier);
     return 0;
 }
@@ -258,6 +287,7 @@ void modifMdp() {
 int cinematic() {
     time_t now = time(NULL);
     struct tm *date = localtime(&now);
+    char *lastLogin = init();
 
     printf("⏳ - \033[33mInitialisation du programme\033[0m\n");
     sleep(3);
@@ -280,7 +310,10 @@ int cinematic() {
     printf("\033[0m");
 
     printf("\n");
-    printf("  \033[1;37mOUTIL INTÉRACTIF EN C | %02d/%02d/%02d \033[0m\n", date->tm_mday, date->tm_mon, date->tm_year+1900);
+    printf("  \033[1;37mOUTIL INTÉRACTIF EN C |\033[0m \033[34m%02d\033[0m/\033[34m%02d\033[0m/\033[34m%02d \033[0m\n", date->tm_mday, date->tm_mon+1, date->tm_year+1900);
+    if (strcmp(lastLogin, "firstConnexion") != 0) {
+        printf("  \033[1;37mDernière connexion :\033[0m \033[35m%s\033[0m\n", lastLogin);
+    }
     printf("  \033[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n");
     printf("     \033[32m●\033[0m Espace synchronisé.\n");
     printf("     \033[36m●\033[0m Bienvenue %s\n", username);
