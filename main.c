@@ -5,7 +5,7 @@
 #include <termios.h> // Gérer le comportement du terminal
 #include <time.h> 
 #include <unistd.h>
-#include "config.h"
+#include "config/config.h"
 #include "features/function.h"
 
 bool accessAuthorized = false;
@@ -158,104 +158,6 @@ int connectMDP(void) {
     }
 }
 
-void calcul(char choix[]) { 
-
-    if (strcmp(choix, "addition") == 0 || strcmp(choix, "soustraction") == 0 || strcmp(choix, "multiplication") == 0 || strcmp(choix, "reste") == 0) {
-        int number1;
-        int number2;
-        int resultat;
-
-        printf("\033[33mPremier nombre : \033[0m");
-        scanf("%d", &number1);
-        printf("\033[33mSecond nombre : \033[0m");
-        scanf("%d", &number2);
-
-        if (strcmp(choix, "multiplication") == 0) {
-            resultat = number1 * number2;
-            printf("Résultat de %d * %d es %d\n", number1, number2, resultat);
-        } else if (strcmp(choix, "addition") == 0) {
-            resultat = number1 + number2;
-            printf("Résultat de %d + %d es %d\n", number1, number2, resultat);
-        } else if (strcmp(choix, "soustraction") == 0) {
-            resultat = number1 - number2;
-            printf("Résultat de %d - %d es %d\n", number1, number2, resultat);
-        } else if (strcmp(choix, "reste") == 0) {
-            resultat = number1 % number2;
-            printf("Résultat de %d modulo %d es %d\n", number1, number2, resultat);
-        }
-    } else if (strcmp(choix, "division") == 0) {
-        double number1;
-        double number2;
-        double resultat;
-
-        printf("\033[33mPremier nombre : \033[0m"); 
-        scanf("%lf", &number1);
-        printf("\033[33mSecond nombre : \033[0m");
-        scanf("%lf", &number2);
-
-        if (number2 != 0) {
-            resultat = number1 / number2;
-            printf("Résultat de %.2f / %.2f = %.2f\n", number1, number2, resultat);
-        } else {
-            printf("Division par zéro pas possible.");
-        }
-    } else {
-        printf("Commande inconnu");
-    }
-}
-
-void compte_a_rebours(int *chiffre) {
-    //int value = chiffre;
-    while (*chiffre != 0) {
-        if (*chiffre < 6) {
-            printf("\033[31m%d\033[0m\n", *chiffre); // A partir de 5 proche de la fin, donc les nombres sont affiché en rouge.
-        } else {
-            printf("%d\n", *chiffre);
-        }
-
-        *chiffre = *chiffre - 1;
-        if (*chiffre == 1) {
-            printf("\033[32mFIN DU COMPTE À REBOURS !!\033[0m");
-        };
-        sleep(1);
-    }
-}
-
-void jeu() {
-    bool hasNumber = false;
-    int nombre = rand() % (100 + 1);
-    nombre += 1;
-
-    // printf("💡 - \033[33mTips\033[0m: Si vous avez besoin d'un indice, écrivez simplement '\033[33mindice\033[0m' dans le terminal.\n"); // TODO: Système d'indice
-
-    while (!hasNumber) {
-        int prediction;
-
-        printf("Choisissez un nombre entre \033[36m1\033[0m et \033[36m100\033[0m : ");
-
-        if (scanf("%d", &prediction) != 1) {
-            printf("\033[31mUtilisez des caractères est strictement interdit.\033[0m\n"); 
-            getchar();
-        }
-
-        if (prediction < 0 || prediction > 100) { 
-            printf("\033[31mVous ne pouvez pas donner un nombre inférieur à 0 ou supérieur à 100.\033[0m\n");
-        }
-
-        if (prediction < nombre) { 
-            printf("C'est plus !\n");
-        } else if (prediction > nombre) {
-            printf("C'est moins !\n");
-        }
-
-        if (prediction == nombre) {
-            printf("\033[32mFélicitation ! Vous avez trouver le nombre.\033[0m\n");
-            hasNumber = true;
-        }
-        
-    }
-}
-
 void modifMdp() {
     char mdpModifConfirm[50];
     char newMdp[50];
@@ -269,7 +171,7 @@ void modifMdp() {
         scanf("%49s", newMdp);
         
         // write directement dans config.c le MDP
-        FILE *fichier = fopen("config.c", "w");
+        FILE *fichier = fopen("config/config.c", "w");
         fprintf(fichier,
         "#ifndef CONFIG_H\n"
         "#define CONFIG_H\n\n"
