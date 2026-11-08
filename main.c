@@ -13,35 +13,36 @@ bool alreadyTry = false;
 bool cine = false;
 char username[50];
 bool Timeout = true;
+bool sudoAcess = true;
 
-    char *init(void) {
-        time_t now = time(NULL);
-        struct tm *date = localtime(&now);
-        int jour, mois, annee, heure, minute;
-        static char lastConnect[100];
+char *init(void) {
+    time_t now = time(NULL);
+    struct tm *date = localtime(&now);
+    int jour, mois, annee, heure, minute;
+    static char lastConnect[100];
 
-        strcpy(lastConnect, "firstConnexion");
+    strcpy(lastConnect, "firstConnexion");
 
-        // Lire quand était la dernière connexion
-        FILE *fichierRead = fopen(".infos", "r"); 
+    // Lire quand était la dernière connexion
+    FILE *fichierRead = fopen(".infos", "r"); 
 
-        if (fichierRead != NULL) {
-            if (fscanf(fichierRead, "Dernière connexion : %d/%d/%d à %d:%d", &jour, &mois, &annee, &heure, &minute) == 5) { // Vérifie que ce n'est pas la première connexion
-                snprintf(lastConnect, sizeof(lastConnect), "%02d/%02d/%02d à %02d:%02d", jour, mois, annee, heure, minute);
-            }
-            fclose(fichierRead);
+    if (fichierRead != NULL) {
+        if (fscanf(fichierRead, "Dernière connexion : %d/%d/%d à %d:%d", &jour, &mois, &annee, &heure, &minute) == 5) { // Vérifie que ce n'est pas la première connexion
+            snprintf(lastConnect, sizeof(lastConnect), "%02d/%02d/%02d à %02d:%02d", jour, mois, annee, heure, minute);
         }
-
-        // Ecrire la dernière connexion actuel
-        FILE *fichier = fopen(".infos", "w"); 
-
-        if (fichier != NULL) {
-            fprintf(fichier, "Dernière connexion : %02d/%02d/%02d à %02d:%02d", date->tm_mday, date->tm_mon+1, date->tm_year+1900, date->tm_hour, date->tm_min);
-            fclose(fichier);
-        }
-
-        return lastConnect;
+        fclose(fichierRead);
     }
+
+    // Ecrire la dernière connexion actuel
+    FILE *fichier = fopen(".infos", "w"); 
+
+    if (fichier != NULL) {
+        fprintf(fichier, "Dernière connexion : %02d/%02d/%02d à %02d:%02d", date->tm_mday, date->tm_mon+1, date->tm_year+1900, date->tm_hour, date->tm_min);
+        fclose(fichier);
+    }
+
+    return lastConnect;
+}
 
 int checkTimeout() {
     time_t now = time(NULL);
@@ -145,7 +146,7 @@ int connectMDP(void) {
 
     if (strcmp(mdp, PASSWORD) == 0) {
         printf("\n\033[32mMot de passe valide, connexion autorisé !\033[0m \n");
-        // sleep(2);
+        sleep(2);
         system("clear");
         validMdp = true;
         hasMdp = true;
@@ -170,16 +171,16 @@ void calcul(char choix[]) {
 
         if (strcmp(choix, "multiplication") == 0) {
             resultat = number1 * number2;
-            printf("Résultat de %d * %d es %d", number1, number2, resultat);
+            printf("Résultat de %d * %d es %d\n", number1, number2, resultat);
         } else if (strcmp(choix, "addition") == 0) {
             resultat = number1 + number2;
-            printf("Résultat de %d + %d es %d", number1, number2, resultat);
+            printf("Résultat de %d + %d es %d\n", number1, number2, resultat);
         } else if (strcmp(choix, "soustraction") == 0) {
             resultat = number1 - number2;
-            printf("Résultat de %d - %d es %d", number1, number2, resultat);
+            printf("Résultat de %d - %d es %d\n", number1, number2, resultat);
         } else if (strcmp(choix, "reste") == 0) {
             resultat = number1 % number2;
-            printf("Résultat de %d modulo %d es %d", number1, number2, resultat);
+            printf("Résultat de %d modulo %d es %d\n", number1, number2, resultat);
         }
     } else if (strcmp(choix, "division") == 0) {
         double number1;
@@ -261,7 +262,7 @@ void modifMdp() {
     printf("Veuillez \033[31mconfirmer\033[0m le mot de passe, pour poursuivre : ");
     scanf("%49s", mdpModifConfirm);
 
-    if (strcmp(mdpModifConfirm, PASSWORD) == 0) {
+    if (strcmp(mdpModifConfirm, PASSWORD) == 0 && sudoAcess) {
         printf("\033[32mMot de passe valide.\033[0m\n");
         printf("Veuillez indiquer le \033[36mnouveau\033[0m mot de passe : ");
         scanf("%49s", newMdp);
@@ -281,6 +282,7 @@ void modifMdp() {
     } else {
         printf("\033[31mMot de passe invalide.\033[0m\n");
         printf("Accès \033[31mSUDO bloquer\033[0m sur votre session.\n");
+        sudoAcess = false;
     }
 }
 
@@ -289,14 +291,18 @@ int cinematic() {
     struct tm *date = localtime(&now);
     char *lastLogin = init();
 
+    
     printf("⏳ - \033[33mInitialisation du programme\033[0m\n");
     sleep(3);
 
-    printf("💻 - \033[35mConnexion à votre espace...\033[0m\n");
-    sleep(2);
+    if (strcmp(lastLogin, "firstConnexion") != 0) {
 
-    printf("🔋 - \033[32mEspace synchronisé, bienvenue %s\033[0m !\n", username);
-    sleep(3);
+        printf("💻 - \033[35mConnexion à votre espace...\033[0m\n");
+        sleep(2);
+
+        printf("🔋 - \033[32mEspace synchronisé, bienvenue %s\033[0m !\n", username);
+        sleep(3);
+    }
 
     system("clear");
 
@@ -306,11 +312,11 @@ int cinematic() {
     printf("  █████╗  ██████╔╝█████╗  █████╗     ██║      ██║   \n");
     printf("  ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝     ██║    ██║   \n");
     printf("  ██║     ██║  ██║███████╗███████╗   ██║   ██████║   \n");
-    printf("  ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═════╝   \n");
+    printf("  ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═════╝                  \033[1;37mversion:\033[36m %s\n", APP_VERSION);
     printf("\033[0m");
 
     printf("\n");
-    printf("  \033[1;37mOUTIL INTÉRACTIF EN C |\033[0m \033[34m%02d\033[0m/\033[34m%02d\033[0m/\033[34m%02d \033[0m\n", date->tm_mday, date->tm_mon+1, date->tm_year+1900);
+    printf("  \033[1;37mOUTIL INTÉRACTIF EN C ➤\033[0m \033[34m%02d\033[0m/\033[34m%02d\033[0m/\033[34m%02d \033[0m\n", date->tm_mday, date->tm_mon+1, date->tm_year+1900);
     if (strcmp(lastLogin, "firstConnexion") != 0) {
         printf("  \033[1;37mDernière connexion :\033[0m \033[35m%s\033[0m\n", lastLogin);
     }
@@ -341,8 +347,8 @@ int main(void)
 
         if (cine) {
             char action[50];
-            printf("    💡 \033[33mTips\033[0m: utilisez \033[31mexit\033[0m pour quitter.\n");
-            printf("[\033[36m%02d:%02d:%02d\033[0m] Quel action voulez-vous éxécuter : ", date->tm_hour, date->tm_min, date->tm_sec);
+            printf("    💡 \033[1;33mTips\033[0m: utilisez \033[1;31mexit\033[0m pour quitter.\n");
+            printf("[\033[1;36m%02d:%02d:%02d\033[0m] Quel action voulez-vous éxécuter : ", date->tm_hour, date->tm_min, date->tm_sec);
             scanf("%49s", action);
 
             if (strcmp(action, "exit") == 0) {
